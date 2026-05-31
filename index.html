@@ -1,0 +1,2358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduCore — School Management System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+/* =============================================
+   CSS VARIABLES & RESET
+   ============================================= */
+:root {
+  --primary: #1a56db;
+  --primary-dark: #1341b0;
+  --primary-light: #ebf0ff;
+  --primary-muted: #93aaed;
+  --accent: #0ea5e9;
+  --accent-light: #e0f2fe;
+  --success: #10b981;
+  --success-light: #d1fae5;
+  --warning: #f59e0b;
+  --warning-light: #fef3c7;
+  --danger: #ef4444;
+  --danger-light: #fee2e2;
+  --purple: #8b5cf6;
+  --purple-light: #ede9fe;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --border: #e5e7eb;
+  --border-light: #f3f4f6;
+  --bg: #f8fafc;
+  --bg-white: #ffffff;
+  --sidebar-w: 260px;
+  --sidebar-collapsed: 72px;
+  --header-h: 64px;
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow: 0 4px 16px rgba(0,0,0,.07), 0 1px 4px rgba(0,0,0,.04);
+  --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+  --transition: .2s cubic-bezier(.4,0,.2,1);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+a { text-decoration: none; color: inherit; }
+button { font-family: inherit; cursor: pointer; }
+input, select, textarea { font-family: inherit; }
+img { display: block; max-width: 100%; }
+ul { list-style: none; }
+h1,h2,h3,h4,h5,h6 { font-family: 'DM Sans', sans-serif; font-weight: 600; }
+
+/* =============================================
+   LAYOUT
+   ============================================= */
+.app { display: flex; min-height: 100vh; }
+
+/* =============================================
+   SIDEBAR
+   ============================================= */
+.sidebar {
+  width: var(--sidebar-w);
+  background: #0f172a;
+  min-height: 100vh;
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  transition: width var(--transition), transform var(--transition);
+  overflow: hidden;
+}
+.sidebar.collapsed { width: var(--sidebar-collapsed); }
+.sidebar-logo {
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  flex-shrink: 0;
+}
+.logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: #fff;
+  flex-shrink: 0;
+}
+.logo-text {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  color: #fff;
+  white-space: nowrap;
+  letter-spacing: -.3px;
+}
+.logo-text span { color: var(--primary-muted); }
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.1) transparent;
+}
+.sidebar-nav::-webkit-scrollbar { width: 4px; }
+.sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 4px; }
+.nav-section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.3);
+  padding: 10px 20px 6px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.collapsed .nav-section-label { opacity: 0; }
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  color: rgba(255,255,255,.6);
+  cursor: pointer;
+  border-radius: 0;
+  transition: all var(--transition);
+  position: relative;
+  white-space: nowrap;
+}
+.nav-item:hover { color: #fff; background: rgba(255,255,255,.06); }
+.nav-item.active {
+  color: #fff;
+  background: rgba(26,86,219,.35);
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--primary);
+  border-radius: 0 2px 2px 0;
+}
+.nav-icon {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  transition: background var(--transition);
+}
+.nav-item.active .nav-icon { background: rgba(26,86,219,.4); color: #93aaed; }
+.nav-label { font-size: 13.5px; font-weight: 500; }
+.nav-badge {
+  margin-left: auto;
+  background: var(--danger);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 20px;
+  line-height: 1.4;
+}
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,.07);
+  flex-shrink: 0;
+}
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.sidebar-avatar {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.sidebar-user-info { min-width: 0; }
+.sidebar-user-name { font-size: 13px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-user-role { font-size: 11px; color: rgba(255,255,255,.4); }
+
+/* =============================================
+   MAIN CONTENT
+   ============================================= */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left var(--transition);
+}
+.sidebar.collapsed ~ .main { margin-left: var(--sidebar-collapsed); }
+
+/* =============================================
+   HEADER
+   ============================================= */
+.header {
+  height: var(--header-h);
+  background: var(--bg-white);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: var(--shadow-sm);
+}
+.header-toggle {
+  width: 36px; height: 36px;
+  border: none;
+  background: var(--border-light);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary);
+  font-size: 16px;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+.header-toggle:hover { background: var(--primary-light); color: var(--primary); }
+.header-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+  flex: 1;
+}
+.header-breadcrumb .current {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.header-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--border-light);
+  border-radius: 8px;
+  padding: 8px 14px;
+  width: 220px;
+  transition: all var(--transition);
+}
+.header-search:focus-within {
+  background: var(--bg-white);
+  border: 1px solid var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+.header-search i { color: var(--text-muted); font-size: 13px; }
+.header-search input {
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  color: var(--text-primary);
+  outline: none;
+  width: 100%;
+}
+.header-search input::placeholder { color: var(--text-muted); }
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+.header-btn {
+  width: 36px; height: 36px;
+  border: none;
+  background: var(--border-light);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary);
+  font-size: 15px;
+  transition: all var(--transition);
+  position: relative;
+  cursor: pointer;
+}
+.header-btn:hover { background: var(--primary-light); color: var(--primary); }
+.notif-dot {
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 8px; height: 8px;
+  background: var(--danger);
+  border-radius: 50%;
+  border: 2px solid var(--bg-white);
+}
+.header-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.header-profile:hover { background: var(--border-light); }
+.profile-avatar {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+}
+.profile-info .name { font-size: 13px; font-weight: 600; line-height: 1.2; }
+.profile-info .role { font-size: 11px; color: var(--text-muted); }
+
+/* =============================================
+   PAGE CONTENT
+   ============================================= */
+.page-content {
+  flex: 1;
+  padding: 28px 28px 40px;
+}
+.section { display: none; }
+.section.active { display: block; }
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.page-title { font-size: 22px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
+.page-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+.page-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+/* =============================================
+   BUTTONS
+   ============================================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  transition: all var(--transition);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); box-shadow: 0 4px 12px rgba(26,86,219,.3); transform: translateY(-1px); }
+.btn-secondary { background: var(--border-light); color: var(--text-secondary); border: 1px solid var(--border); }
+.btn-secondary:hover { background: #eee; color: var(--text-primary); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { background: #0d9488; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { background: #dc2626; }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-icon { padding: 8px; border-radius: var(--radius-sm); background: var(--border-light); color: var(--text-secondary); border: none; transition: all var(--transition); cursor: pointer; }
+.btn-icon:hover { background: var(--primary-light); color: var(--primary); }
+
+/* =============================================
+   CARDS
+   ============================================= */
+.card {
+  background: var(--bg-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.card-header {
+  padding: 20px 24px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-title { font-size: 15px; font-weight: 700; }
+.card-body { padding: 20px 24px; }
+.card-footer { padding: 14px 24px; border-top: 1px solid var(--border-light); background: var(--border-light); font-size: 12px; color: var(--text-muted); }
+
+/* =============================================
+   STAT CARDS (DASHBOARD)
+   ============================================= */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--bg-white);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  transition: transform var(--transition), box-shadow var(--transition);
+  cursor: default;
+}
+.stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.stat-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.stat-icon.blue { background: var(--primary-light); color: var(--primary); }
+.stat-icon.green { background: var(--success-light); color: var(--success); }
+.stat-icon.yellow { background: var(--warning-light); color: var(--warning); }
+.stat-icon.red { background: var(--danger-light); color: var(--danger); }
+.stat-icon.purple { background: var(--purple-light); color: var(--purple); }
+.stat-icon.cyan { background: var(--accent-light); color: var(--accent); }
+.stat-body { flex: 1; min-width: 0; }
+.stat-value { font-size: 26px; font-weight: 700; line-height: 1.1; color: var(--text-primary); }
+.stat-label { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+.stat-change { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; margin-top: 6px; }
+.stat-change.up { color: var(--success); }
+.stat-change.down { color: var(--danger); }
+
+/* =============================================
+   TABLES
+   ============================================= */
+.table-container { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  background: var(--border-light);
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+tbody tr {
+  border-bottom: 1px solid var(--border-light);
+  transition: background var(--transition);
+}
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--bg); }
+tbody td { padding: 14px 16px; vertical-align: middle; }
+
+/* =============================================
+   BADGES
+   ============================================= */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.badge-success { background: var(--success-light); color: var(--success); }
+.badge-danger { background: var(--danger-light); color: var(--danger); }
+.badge-warning { background: var(--warning-light); color: var(--warning); }
+.badge-primary { background: var(--primary-light); color: var(--primary); }
+.badge-purple { background: var(--purple-light); color: var(--purple); }
+.badge-cyan { background: var(--accent-light); color: var(--accent); }
+.badge-gray { background: var(--border-light); color: var(--text-secondary); }
+
+/* =============================================
+   SEARCH & FILTER BAR
+   ============================================= */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-light);
+  flex-wrap: wrap;
+}
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--border-light);
+  border-radius: 8px;
+  padding: 8px 14px;
+  flex: 1;
+  max-width: 320px;
+  min-width: 180px;
+  transition: all var(--transition);
+}
+.search-box:focus-within {
+  background: var(--bg-white);
+  border: 1px solid var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+.search-box i { color: var(--text-muted); font-size: 13px; }
+.search-box input { border: none; background: transparent; font-size: 13px; color: var(--text-primary); outline: none; width: 100%; }
+.search-box input::placeholder { color: var(--text-muted); }
+.filter-select {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: var(--bg-white);
+  outline: none;
+  cursor: pointer;
+}
+.filter-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+
+/* =============================================
+   AVATAR
+   ============================================= */
+.avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  color: #fff;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+}
+.avatar-sm { width: 28px; height: 28px; font-size: 10px; }
+.avatar-lg { width: 52px; height: 52px; font-size: 18px; }
+.avatar-row { display: flex; align-items: center; gap: 10px; }
+.avatar-row .info .name { font-weight: 600; font-size: 13px; }
+.avatar-row .info .sub { font-size: 11px; color: var(--text-muted); }
+
+/* =============================================
+   PROGRESS BAR
+   ============================================= */
+.progress { height: 6px; background: var(--border-light); border-radius: 6px; overflow: hidden; }
+.progress-bar { height: 100%; border-radius: 6px; transition: width 1s ease; }
+.progress-bar.blue { background: var(--primary); }
+.progress-bar.green { background: var(--success); }
+.progress-bar.yellow { background: var(--warning); }
+.progress-bar.red { background: var(--danger); }
+
+/* =============================================
+   DASHBOARD GRID
+   ============================================= */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+}
+.col-span-2 { grid-column: span 2; }
+.col-span-3 { grid-column: span 3; }
+
+/* =============================================
+   ACTIVITY FEED
+   ============================================= */
+.activity-list { display: flex; flex-direction: column; gap: 0; }
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-dot {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.activity-body { flex: 1; }
+.activity-text { font-size: 13px; line-height: 1.5; }
+.activity-text strong { font-weight: 600; }
+.activity-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* =============================================
+   EVENTS
+   ============================================= */
+.event-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+.event-item:last-child { border-bottom: none; }
+.event-date {
+  width: 42px;
+  text-align: center;
+  background: var(--primary-light);
+  border-radius: 8px;
+  padding: 6px 4px;
+  flex-shrink: 0;
+}
+.event-date .day { font-size: 20px; font-weight: 800; color: var(--primary); line-height: 1; }
+.event-date .month { font-size: 10px; font-weight: 600; color: var(--primary-muted); text-transform: uppercase; letter-spacing: .5px; }
+.event-body { flex: 1; }
+.event-title { font-size: 13px; font-weight: 600; }
+.event-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* =============================================
+   CHART PLACEHOLDERS
+   ============================================= */
+.chart-placeholder {
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent-light) 100%);
+  border-radius: var(--radius);
+  height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+.chart-placeholder::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 30px, rgba(26,86,219,.04) 30px, rgba(26,86,219,.04) 31px),
+              repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(26,86,219,.04) 40px, rgba(26,86,219,.04) 41px);
+}
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 100px;
+  position: relative;
+  z-index: 1;
+}
+.chart-bar {
+  width: 22px;
+  border-radius: 4px 4px 0 0;
+  background: var(--primary);
+  opacity: .7;
+  transition: opacity var(--transition);
+}
+.chart-bar:hover { opacity: 1; }
+.chart-bar.green { background: var(--success); }
+.chart-bar.yellow { background: var(--warning); }
+.chart-label { font-size: 12px; color: var(--text-muted); font-weight: 500; position: relative; z-index: 1; }
+
+/* mini bar chart svg */
+.mini-chart { height: 50px; width: 100%; }
+
+/* =============================================
+   ATTENDANCE GRID
+   ============================================= */
+.attendance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.attendance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+.attendance-row:last-child { border-bottom: none; }
+.att-status-btn {
+  display: flex;
+  gap: 6px;
+}
+.att-btn {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.att-btn.present {
+  background: var(--success-light);
+  border-color: var(--success);
+  color: var(--success);
+}
+.att-btn.present.active, .att-btn.present:hover {
+  background: var(--success);
+  color: #fff;
+}
+.att-btn.absent {
+  background: var(--danger-light);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.att-btn.absent.active, .att-btn.absent:hover {
+  background: var(--danger);
+  color: #fff;
+}
+.att-btn.late {
+  background: var(--warning-light);
+  border-color: var(--warning);
+  color: var(--warning);
+}
+.att-btn.late.active, .att-btn.late:hover {
+  background: var(--warning);
+  color: #fff;
+}
+
+/* =============================================
+   MODAL
+   ============================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition);
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--bg-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: scale(.95) translateY(10px);
+  transition: transform var(--transition);
+}
+.modal-overlay.open .modal { transform: scale(1) translateY(0); }
+.modal-large { max-width: 780px; }
+.modal-header {
+  padding: 24px 24px 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.modal-title { font-size: 18px; font-weight: 700; }
+.modal-close {
+  width: 32px; height: 32px;
+  border: none;
+  background: var(--border-light);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  transition: all var(--transition);
+}
+.modal-close:hover { background: var(--danger-light); color: var(--danger); }
+.modal-body { padding: 20px 24px; }
+.modal-footer {
+  padding: 0 24px 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* =============================================
+   FORM
+   ============================================= */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: span 2; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+.form-input {
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-primary);
+  outline: none;
+  transition: all var(--transition);
+  width: 100%;
+  background: var(--bg-white);
+}
+.form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+
+/* =============================================
+   STUDENT PROFILE MODAL
+   ============================================= */
+.profile-banner {
+  height: 100px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  margin: -20px -24px 0;
+  position: relative;
+}
+.profile-avatar-wrap {
+  position: absolute;
+  bottom: -28px;
+  left: 24px;
+}
+.profile-avatar-img {
+  width: 64px; height: 64px;
+  background: #fff;
+  border-radius: 50%;
+  border: 4px solid #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--primary);
+  box-shadow: var(--shadow);
+}
+.profile-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 20px;
+}
+.profile-info-item .label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+.profile-info-item .value { font-size: 13px; font-weight: 600; margin-top: 2px; }
+
+/* =============================================
+   DONUT CHART (CSS)
+   ============================================= */
+.donut-wrap { display: flex; align-items: center; gap: 20px; }
+.donut {
+  width: 90px; height: 90px;
+  border-radius: 50%;
+  background: conic-gradient(var(--success) 0% 87%, var(--danger) 87% 95%, var(--warning) 95% 100%);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+}
+.donut::after {
+  content: '';
+  width: 60px; height: 60px;
+  background: var(--bg-white);
+  border-radius: 50%;
+  position: absolute;
+}
+.donut-label {
+  position: relative;
+  z-index: 1;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.donut-legend { display: flex; flex-direction: column; gap: 6px; }
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* =============================================
+   NOTIFICATION CARDS
+   ============================================= */
+.notif-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+.notif-card:last-child { border-bottom: none; }
+.notif-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.notif-body { flex: 1; }
+.notif-title { font-size: 13px; font-weight: 600; }
+.notif-text { font-size: 12px; color: var(--text-muted); margin-top: 2px; line-height: 1.5; }
+.notif-time { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.notif-unread { width: 8px; height: 8px; background: var(--primary); border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+
+/* =============================================
+   MOBILE OVERLAY
+   ============================================= */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 99;
+}
+.sidebar-overlay.visible { display: block; }
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+@media (max-width: 1100px) {
+  .dashboard-grid { grid-template-columns: 1fr 1fr; }
+  .col-span-2 { grid-column: span 2; }
+  .col-span-3 { grid-column: span 2; }
+}
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); width: var(--sidebar-w) !important; }
+  .sidebar.mobile-open { transform: translateX(0); }
+  .main { margin-left: 0 !important; }
+  .page-content { padding: 20px 16px 32px; }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .col-span-2, .col-span-3 { grid-column: span 1; }
+  .stats-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .header-search { display: none; }
+  .form-grid { grid-template-columns: 1fr; }
+  .form-group.full { grid-column: span 1; }
+}
+@media (max-width: 580px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .toolbar { gap: 8px; }
+  .page-header { flex-direction: column; align-items: flex-start; }
+}
+
+/* =============================================
+   SCROLLBAR
+   ============================================= */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* =============================================
+   MISC UTILITIES
+   ============================================= */
+.text-muted { color: var(--text-muted); }
+.text-sm { font-size: 12px; }
+.font-bold { font-weight: 700; }
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.mt-1 { margin-top: 4px; }
+.mt-2 { margin-top: 8px; }
+.mt-3 { margin-top: 12px; }
+.mb-3 { margin-bottom: 12px; }
+.divider { height: 1px; background: var(--border-light); margin: 16px 0; }
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-muted);
+}
+.empty-state i { font-size: 40px; margin-bottom: 12px; opacity: .4; }
+.empty-state p { font-size: 13px; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 780px) { .two-col { grid-template-columns: 1fr; } }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+@media (max-width: 780px) { .three-col { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .three-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+    <div class="logo-text">Edu<span>Core</span></div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+    <div class="nav-item active" onclick="navigate('dashboard', this)">
+      <div class="nav-icon"><i class="fas fa-th-large"></i></div>
+      <span class="nav-label">Dashboard</span>
+    </div>
+
+    <div class="nav-section-label">Academic</div>
+    <div class="nav-item" onclick="navigate('students', this)">
+      <div class="nav-icon"><i class="fas fa-user-graduate"></i></div>
+      <span class="nav-label">Students</span>
+    </div>
+    <div class="nav-item" onclick="navigate('teachers', this)">
+      <div class="nav-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+      <span class="nav-label">Teachers</span>
+    </div>
+    <div class="nav-item" onclick="navigate('classes', this)">
+      <div class="nav-icon"><i class="fas fa-door-open"></i></div>
+      <span class="nav-label">Classes & Subjects</span>
+    </div>
+    <div class="nav-item" onclick="navigate('attendance', this)">
+      <div class="nav-icon"><i class="fas fa-clipboard-check"></i></div>
+      <span class="nav-label">Attendance</span>
+    </div>
+    <div class="nav-item" onclick="navigate('assignments', this)">
+      <div class="nav-icon"><i class="fas fa-tasks"></i></div>
+      <span class="nav-label">Assignments</span>
+      <span class="nav-badge">5</span>
+    </div>
+
+    <div class="nav-section-label">Evaluation</div>
+    <div class="nav-item" onclick="navigate('exams', this)">
+      <div class="nav-icon"><i class="fas fa-file-alt"></i></div>
+      <span class="nav-label">Exams & Results</span>
+    </div>
+    <div class="nav-item" onclick="navigate('fees', this)">
+      <div class="nav-icon"><i class="fas fa-dollar-sign"></i></div>
+      <span class="nav-label">Fee Management</span>
+    </div>
+
+    <div class="nav-section-label">Insights</div>
+    <div class="nav-item" onclick="navigate('reports', this)">
+      <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
+      <span class="nav-label">Reports & Analytics</span>
+    </div>
+    <div class="nav-item" onclick="navigate('notifications', this)">
+      <div class="nav-icon"><i class="fas fa-bell"></i></div>
+      <span class="nav-label">Notifications</span>
+      <span class="nav-badge">3</span>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">PK</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name">Principal Khan</div>
+        <div class="sidebar-user-role">Administrator</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<div class="main" id="main">
+
+  <!-- HEADER -->
+  <header class="header">
+    <button class="header-toggle" onclick="toggleSidebar()" title="Toggle sidebar">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="header-breadcrumb">
+      <span>EduCore</span>
+      <i class="fas fa-chevron-right" style="font-size:10px"></i>
+      <span class="current" id="breadcrumb">Dashboard</span>
+    </div>
+    <div class="header-search">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Search students, teachers...">
+    </div>
+    <div class="header-actions">
+      <button class="header-btn" onclick="navigate('notifications', document.querySelector('[onclick*=notifications]'))">
+        <i class="fas fa-bell"></i>
+        <span class="notif-dot"></span>
+      </button>
+      <button class="header-btn">
+        <i class="fas fa-cog"></i>
+      </button>
+      <div class="header-profile">
+        <div class="profile-avatar">PK</div>
+        <div class="profile-info">
+          <div class="name">Principal Khan</div>
+          <div class="role">Admin</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- PAGE CONTENT -->
+  <div class="page-content">
+
+    <!-- ==================== DASHBOARD ==================== -->
+    <section class="section active" id="sec-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Welcome back, Principal Khan 👋</div>
+          <div class="page-subtitle">Monday, June 1, 2026 — Here's what's happening today</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary"><i class="fas fa-download"></i> Export Report</button>
+          <button class="btn btn-primary"><i class="fas fa-plus"></i> Quick Add</button>
+        </div>
+      </div>
+
+      <!-- STAT CARDS -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fas fa-user-graduate"></i></div>
+          <div class="stat-body">
+            <div class="stat-value">1,248</div>
+            <div class="stat-label">Total Students</div>
+            <div class="stat-change up"><i class="fas fa-arrow-up"></i> 4.2% this month</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fas fa-chalkboard-teacher"></i></div>
+          <div class="stat-body">
+            <div class="stat-value">86</div>
+            <div class="stat-label">Total Teachers</div>
+            <div class="stat-change up"><i class="fas fa-arrow-up"></i> 2 new this term</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple"><i class="fas fa-door-open"></i></div>
+          <div class="stat-body">
+            <div class="stat-value">42</div>
+            <div class="stat-label">Active Classes</div>
+            <div class="stat-change up"><i class="fas fa-arrow-up"></i> 3 new sections</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon cyan"><i class="fas fa-clipboard-check"></i></div>
+          <div class="stat-body">
+            <div class="stat-value">91.4%</div>
+            <div class="stat-label">Avg. Attendance</div>
+            <div class="stat-change down"><i class="fas fa-arrow-down"></i> 1.1% vs last week</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon yellow"><i class="fas fa-dollar-sign"></i></div>
+          <div class="stat-body">
+            <div class="stat-value">$14,220</div>
+            <div class="stat-label">Pending Fees</div>
+            <div class="stat-change down"><i class="fas fa-arrow-down"></i> 8 students</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red"><i class="fas fa-file-alt"></i></div>
+          <div class="stat-body">
+            <div class="stat-value">3</div>
+            <div class="stat-label">Upcoming Exams</div>
+            <div class="stat-change up"><i class="fas fa-calendar"></i> Next: June 8</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DASHBOARD GRID -->
+      <div class="dashboard-grid">
+
+        <!-- Recent Activities -->
+        <div class="card col-span-2">
+          <div class="card-header">
+            <div class="card-title">Recent Activities</div>
+            <button class="btn btn-secondary btn-sm">View All</button>
+          </div>
+          <div class="card-body">
+            <div class="activity-list">
+              <div class="activity-item">
+                <div class="activity-dot" style="background:var(--primary-light);color:var(--primary)"><i class="fas fa-user-plus"></i></div>
+                <div class="activity-body">
+                  <div class="activity-text"><strong>New student enrolled</strong> — Ayesha Malik joined Class 10-A</div>
+                  <div class="activity-time">2 minutes ago</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot" style="background:var(--success-light);color:var(--success)"><i class="fas fa-check-circle"></i></div>
+                <div class="activity-body">
+                  <div class="activity-text"><strong>Attendance marked</strong> — Mr. Ahmad submitted 9-B attendance (48/50 present)</div>
+                  <div class="activity-time">18 minutes ago</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot" style="background:var(--warning-light);color:var(--warning)"><i class="fas fa-dollar-sign"></i></div>
+                <div class="activity-body">
+                  <div class="activity-text"><strong>Fee payment received</strong> — $1,500 from Hassan Ali (Class 11-C)</div>
+                  <div class="activity-time">42 minutes ago</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot" style="background:var(--purple-light);color:var(--purple)"><i class="fas fa-tasks"></i></div>
+                <div class="activity-body">
+                  <div class="activity-text"><strong>Assignment posted</strong> — Ms. Fatima posted Chemistry Lab Report for Class 12</div>
+                  <div class="activity-time">1 hour ago</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot" style="background:var(--danger-light);color:var(--danger)"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="activity-body">
+                  <div class="activity-text"><strong>Exam alert</strong> — Final exams scheduled for June 8–18. Notices sent to all parents.</div>
+                  <div class="activity-time">3 hours ago</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Events -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Upcoming Events</div>
+            <button class="btn-icon"><i class="fas fa-plus"></i></button>
+          </div>
+          <div class="card-body">
+            <div class="event-item">
+              <div class="event-date"><div class="day">08</div><div class="month">Jun</div></div>
+              <div class="event-body">
+                <div class="event-title">Final Exams Begin</div>
+                <div class="event-meta"><i class="fas fa-clock"></i> 08:00 AM · All Grades</div>
+              </div>
+            </div>
+            <div class="event-item">
+              <div class="event-date"><div class="day">12</div><div class="month">Jun</div></div>
+              <div class="event-body">
+                <div class="event-title">Annual Science Fair</div>
+                <div class="event-meta"><i class="fas fa-map-marker-alt"></i> Main Hall</div>
+              </div>
+            </div>
+            <div class="event-item">
+              <div class="event-date"><div class="day">15</div><div class="month">Jun</div></div>
+              <div class="event-body">
+                <div class="event-title">Parent-Teacher Meeting</div>
+                <div class="event-meta"><i class="fas fa-users"></i> All Classrooms</div>
+              </div>
+            </div>
+            <div class="event-item">
+              <div class="event-date"><div class="day">20</div><div class="month">Jun</div></div>
+              <div class="event-body">
+                <div class="event-title">Summer Break Begins</div>
+                <div class="event-meta"><i class="fas fa-sun"></i> School Holiday</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Attendance Chart -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">This Week's Attendance</div>
+            <span class="badge badge-success">↑ Good</span>
+          </div>
+          <div class="card-body">
+            <div class="donut-wrap" style="margin-bottom:16px">
+              <div class="donut"><span class="donut-label">87%</span></div>
+              <div class="donut-legend">
+                <div class="legend-item"><div class="legend-dot" style="background:var(--success)"></div> Present (87%)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--danger)"></div> Absent (8%)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--warning)"></div> Late (5%)</div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div>
+                <div class="flex justify-between text-sm text-muted mb-1" style="margin-bottom:4px"><span>Grade 9</span><span>94%</span></div>
+                <div class="progress"><div class="progress-bar blue" style="width:94%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-sm text-muted mb-1" style="margin-bottom:4px"><span>Grade 10</span><span>89%</span></div>
+                <div class="progress"><div class="progress-bar green" style="width:89%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-sm text-muted mb-1" style="margin-bottom:4px"><span>Grade 11</span><span>85%</span></div>
+                <div class="progress"><div class="progress-bar yellow" style="width:85%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-sm text-muted mb-1" style="margin-bottom:4px"><span>Grade 12</span><span>91%</span></div>
+                <div class="progress"><div class="progress-bar blue" style="width:91%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fee Summary -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Fee Collection</div>
+            <span class="badge badge-primary">June 2026</span>
+          </div>
+          <div class="card-body">
+            <div class="chart-placeholder" style="height:140px;margin-bottom:16px">
+              <div class="chart-bars">
+                <div class="chart-bar" style="height:55px"></div>
+                <div class="chart-bar green" style="height:80px"></div>
+                <div class="chart-bar" style="height:65px"></div>
+                <div class="chart-bar green" style="height:90px"></div>
+                <div class="chart-bar" style="height:70px"></div>
+                <div class="chart-bar green" style="height:100px"></div>
+                <div class="chart-bar yellow" style="height:45px"></div>
+              </div>
+              <div class="chart-label">Monthly Revenue Trend</div>
+            </div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              <div style="flex:1;min-width:100px;background:var(--success-light);border-radius:10px;padding:12px;text-align:center">
+                <div style="font-size:18px;font-weight:800;color:var(--success)">$68,400</div>
+                <div style="font-size:11px;color:var(--success);margin-top:2px">Collected</div>
+              </div>
+              <div style="flex:1;min-width:100px;background:var(--danger-light);border-radius:10px;padding:12px;text-align:center">
+                <div style="font-size:18px;font-weight:800;color:var(--danger)">$14,220</div>
+                <div style="font-size:11px;color:var(--danger);margin-top:2px">Pending</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Performers -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Top Performers</div>
+            <span class="badge badge-warning"><i class="fas fa-star"></i> This Term</span>
+          </div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div class="flex items-center gap-2" style="padding:10px;background:linear-gradient(90deg,#fff7ed,transparent);border-radius:8px">
+                <div style="font-size:18px">🥇</div>
+                <div class="avatar" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">ZK</div>
+                <div style="flex:1"><div style="font-weight:600;font-size:13px">Zara Khan</div><div style="font-size:11px;color:var(--text-muted)">Class 12-A</div></div>
+                <div style="font-weight:800;color:var(--warning)">98.4%</div>
+              </div>
+              <div class="flex items-center gap-2" style="padding:10px;background:var(--border-light);border-radius:8px">
+                <div style="font-size:18px">🥈</div>
+                <div class="avatar" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">AR</div>
+                <div style="flex:1"><div style="font-weight:600;font-size:13px">Ali Raza</div><div style="font-size:11px;color:var(--text-muted)">Class 12-B</div></div>
+                <div style="font-weight:800;color:var(--primary)">96.1%</div>
+              </div>
+              <div class="flex items-center gap-2" style="padding:10px;background:var(--border-light);border-radius:8px">
+                <div style="font-size:18px">🥉</div>
+                <div class="avatar" style="background:linear-gradient(135deg,#10b981,#0ea5e9)">SM</div>
+                <div style="flex:1"><div style="font-weight:600;font-size:13px">Sara Mirza</div><div style="font-size:11px;color:var(--text-muted)">Class 11-A</div></div>
+                <div style="font-weight:800;color:var(--success)">95.8%</div>
+              </div>
+              <div class="flex items-center gap-2" style="padding:10px;background:var(--border-light);border-radius:8px">
+                <div style="font-size:18px">4️⃣</div>
+                <div class="avatar" style="background:linear-gradient(135deg,#ef4444,#f59e0b)">HA</div>
+                <div style="flex:1"><div style="font-weight:600;font-size:13px">Hassan Ali</div><div style="font-size:11px;color:var(--text-muted)">Class 11-B</div></div>
+                <div style="font-weight:800;color:var(--text-secondary)">94.3%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end dashboard-grid -->
+    </section>
+
+    <!-- ==================== STUDENTS ==================== -->
+    <section class="section" id="sec-students">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Student Management</div>
+          <div class="page-subtitle">1,248 total enrolled students</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary"><i class="fas fa-file-import"></i> Import CSV</button>
+          <button class="btn btn-primary" onclick="openModal('addStudentModal')"><i class="fas fa-plus"></i> Add Student</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search by name, ID, class..." oninput="filterTable('studentTable', this.value)">
+          </div>
+          <select class="filter-select">
+            <option>All Classes</option>
+            <option>Class 9</option>
+            <option>Class 10</option>
+            <option>Class 11</option>
+            <option>Class 12</option>
+          </select>
+          <select class="filter-select">
+            <option>All Sections</option>
+            <option>Section A</option>
+            <option>Section B</option>
+            <option>Section C</option>
+          </select>
+          <select class="filter-select">
+            <option>All Status</option>
+            <option>Active</option>
+            <option>Inactive</option>
+          </select>
+          <button class="btn-icon" style="margin-left:auto" title="Download"><i class="fas fa-download"></i></button>
+          <button class="btn-icon" title="Print"><i class="fas fa-print"></i></button>
+        </div>
+        <div class="table-container">
+          <table id="studentTable">
+            <thead>
+              <tr>
+                <th><input type="checkbox" style="accent-color:var(--primary)"></th>
+                <th>Student</th>
+                <th>ID</th>
+                <th>Class</th>
+                <th>Gender</th>
+                <th>Parent / Guardian</th>
+                <th>Contact</th>
+                <th>Fees</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="studentTableBody"></tbody>
+          </table>
+        </div>
+        <div class="card-footer flex justify-between items-center" style="display:flex;justify-content:space-between;align-items:center">
+          <span>Showing 1–15 of 1,248 students</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-secondary btn-sm"><i class="fas fa-chevron-left"></i></button>
+            <button class="btn btn-primary btn-sm">1</button>
+            <button class="btn btn-secondary btn-sm">2</button>
+            <button class="btn btn-secondary btn-sm">3</button>
+            <button class="btn btn-secondary btn-sm"><i class="fas fa-chevron-right"></i></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TEACHERS ==================== -->
+    <section class="section" id="sec-teachers">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Teacher Management</div>
+          <div class="page-subtitle">86 faculty members across 18 subjects</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary"><i class="fas fa-file-export"></i> Export</button>
+          <button class="btn btn-primary"><i class="fas fa-plus"></i> Add Teacher</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search teachers..." oninput="filterTable('teacherTable', this.value)">
+          </div>
+          <select class="filter-select">
+            <option>All Subjects</option>
+            <option>Mathematics</option>
+            <option>Science</option>
+            <option>English</option>
+            <option>Urdu</option>
+          </select>
+        </div>
+        <div class="table-container">
+          <table id="teacherTable">
+            <thead>
+              <tr>
+                <th>Teacher</th>
+                <th>ID</th>
+                <th>Subject(s)</th>
+                <th>Class(es)</th>
+                <th>Experience</th>
+                <th>Contact</th>
+                <th>Joined</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="teacherTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== CLASSES ==================== -->
+    <section class="section" id="sec-classes">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Classes & Subjects</div>
+          <div class="page-subtitle">42 active classes · 18 subjects</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-primary"><i class="fas fa-plus"></i> Add Class</button>
+        </div>
+      </div>
+      <div class="two-col">
+        <div>
+          <div class="card">
+            <div class="card-header" style="padding-bottom:16px">
+              <div class="card-title">Class Overview</div>
+              <button class="btn btn-secondary btn-sm"><i class="fas fa-plus"></i> Section</button>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead><tr><th>Class</th><th>Sections</th><th>Students</th><th>Class Teacher</th><th>Status</th></tr></thead>
+                <tbody id="classTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header" style="padding-bottom:16px">
+              <div class="card-title">Subject Allocation</div>
+              <button class="btn btn-secondary btn-sm"><i class="fas fa-plus"></i> Subject</button>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead><tr><th>Subject</th><th>Code</th><th>Teacher(s)</th><th>Classes</th><th>Type</th></tr></thead>
+                <tbody id="subjectTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== ATTENDANCE ==================== -->
+    <section class="section" id="sec-attendance">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Attendance Management</div>
+          <div class="page-subtitle">Daily register · Monday, June 1, 2026</div>
+        </div>
+        <div class="page-actions">
+          <select class="filter-select">
+            <option>Class 10-A (50 students)</option>
+            <option>Class 9-B</option>
+            <option>Class 11-A</option>
+            <option>Class 12-C</option>
+          </select>
+          <button class="btn btn-success"><i class="fas fa-save"></i> Save Attendance</button>
+        </div>
+      </div>
+
+      <!-- Monthly Summary Cards -->
+      <div class="three-col" style="margin-bottom:20px">
+        <div class="card" style="text-align:center;padding:20px">
+          <div style="font-size:32px;font-weight:800;color:var(--success)">91.4%</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-top:4px">Monthly Average</div>
+          <div class="progress" style="margin-top:10px"><div class="progress-bar green" style="width:91.4%"></div></div>
+        </div>
+        <div class="card" style="text-align:center;padding:20px">
+          <div style="font-size:32px;font-weight:800;color:var(--primary)">46</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-top:4px">Present Today</div>
+          <div class="progress" style="margin-top:10px"><div class="progress-bar blue" style="width:92%"></div></div>
+        </div>
+        <div class="card" style="text-align:center;padding:20px">
+          <div style="font-size:32px;font-weight:800;color:var(--danger)">4</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-top:4px">Absent Today</div>
+          <div class="progress" style="margin-top:10px"><div class="progress-bar red" style="width:8%"></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Daily Attendance Sheet — Class 10-A</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-secondary btn-sm" onclick="markAll('present')"><i class="fas fa-check"></i> Mark All Present</button>
+            <button class="btn btn-secondary btn-sm" onclick="markAll('absent')"><i class="fas fa-times"></i> Mark All Absent</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="attendanceList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== ASSIGNMENTS ==================== -->
+    <section class="section" id="sec-assignments">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Assignment Management</div>
+          <div class="page-subtitle">5 pending assignments require attention</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-primary"><i class="fas fa-plus"></i> New Assignment</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search assignments...">
+          </div>
+          <select class="filter-select"><option>All Subjects</option><option>Mathematics</option><option>Science</option><option>English</option></select>
+          <select class="filter-select"><option>All Status</option><option>Pending</option><option>Submitted</option><option>Graded</option></select>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead><tr><th>Assignment Title</th><th>Subject</th><th>Class</th><th>Teacher</th><th>Assigned</th><th>Due Date</th><th>Submissions</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="assignmentTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== EXAMS ==================== -->
+    <section class="section" id="sec-exams">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Examinations & Results</div>
+          <div class="page-subtitle">Final Term 2026 — June 8–18</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary"><i class="fas fa-file-pdf"></i> Result Card</button>
+          <button class="btn btn-primary"><i class="fas fa-plus"></i> Schedule Exam</button>
+        </div>
+      </div>
+
+      <!-- Result Summary Cards -->
+      <div class="three-col" style="margin-bottom:20px">
+        <div class="card" style="padding:20px;display:flex;align-items:center;gap:16px">
+          <div class="stat-icon green"><i class="fas fa-trophy"></i></div>
+          <div><div style="font-size:24px;font-weight:800;color:var(--success)">78.4%</div><div style="font-size:12px;color:var(--text-muted)">School Average</div></div>
+        </div>
+        <div class="card" style="padding:20px;display:flex;align-items:center;gap:16px">
+          <div class="stat-icon blue"><i class="fas fa-medal"></i></div>
+          <div><div style="font-size:24px;font-weight:800;color:var(--primary)">98.4%</div><div style="font-size:12px;color:var(--text-muted)">Top Score (Zara Khan)</div></div>
+        </div>
+        <div class="card" style="padding:20px;display:flex;align-items:center;gap:16px">
+          <div class="stat-icon yellow"><i class="fas fa-percentage"></i></div>
+          <div><div style="font-size:24px;font-weight:800;color:var(--warning)">96.2%</div><div style="font-size:12px;color:var(--text-muted)">Pass Rate</div></div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header" style="padding-bottom:0"><div class="card-title">Exam Schedule</div></div>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Subject</th><th>Date</th><th>Time</th><th>Room</th><th>Invigilator</th></tr></thead>
+              <tbody id="examScheduleBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="padding-bottom:0">
+            <div class="card-title">Class 12-A Rankings</div>
+            <span class="badge badge-warning"><i class="fas fa-star"></i> Top 10</span>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Rank</th><th>Student</th><th>Total Marks</th><th>%</th><th>Grade</th></tr></thead>
+              <tbody id="rankingTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:20px">
+        <div class="card-header"><div class="card-title">Marks Sheet — Class 12-A</div>
+          <div style="display:flex;gap:8px"><select class="filter-select"><option>Class 12-A</option><option>Class 12-B</option><option>Class 11-A</option></select></div>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead><tr><th>Student</th><th>Math</th><th>Physics</th><th>Chemistry</th><th>Biology</th><th>English</th><th>CS</th><th>Total</th><th>%</th><th>Grade</th></tr></thead>
+            <tbody id="marksTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== FEES ==================== -->
+    <section class="section" id="sec-fees">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Fee Management</div>
+          <div class="page-subtitle">Billing period: June 2026</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary"><i class="fas fa-file-invoice"></i> Generate Bills</button>
+          <button class="btn btn-primary"><i class="fas fa-plus"></i> Record Payment</button>
+        </div>
+      </div>
+
+      <!-- Revenue Cards -->
+      <div class="three-col" style="margin-bottom:20px">
+        <div class="card" style="padding:20px;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff">
+          <div style="font-size:12px;opacity:.8;margin-bottom:6px">TOTAL REVENUE (JUNE)</div>
+          <div style="font-size:28px;font-weight:800">$82,620</div>
+          <div style="font-size:12px;opacity:.7;margin-top:6px"><i class="fas fa-arrow-up"></i> 6.4% vs May</div>
+        </div>
+        <div class="card" style="padding:20px">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">COLLECTED</div>
+          <div style="font-size:28px;font-weight:800;color:var(--success)">$68,400</div>
+          <div style="font-size:12px;color:var(--success);margin-top:6px">82.8% of target</div>
+          <div class="progress" style="margin-top:8px"><div class="progress-bar green" style="width:82.8%"></div></div>
+        </div>
+        <div class="card" style="padding:20px">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">PENDING</div>
+          <div style="font-size:28px;font-weight:800;color:var(--danger)">$14,220</div>
+          <div style="font-size:12px;color:var(--danger);margin-top:6px">8 students</div>
+          <div class="progress" style="margin-top:8px"><div class="progress-bar red" style="width:17.2%"></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search by student name or ID...">
+          </div>
+          <select class="filter-select"><option>All Classes</option><option>Class 9</option><option>Class 10</option><option>Class 11</option><option>Class 12</option></select>
+          <select class="filter-select"><option>All Status</option><option>Paid</option><option>Pending</option><option>Overdue</option></select>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead><tr><th>Student</th><th>Class</th><th>Fee Type</th><th>Amount</th><th>Due Date</th><th>Paid On</th><th>Method</th><th>Status</th><th>Receipt</th></tr></thead>
+            <tbody id="feeTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== REPORTS ==================== -->
+    <section class="section" id="sec-reports">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Reports & Analytics</div>
+          <div class="page-subtitle">Academic Year 2025–2026 Overview</div>
+        </div>
+        <div class="page-actions">
+          <select class="filter-select"><option>This Term</option><option>Last Term</option><option>Full Year</option></select>
+          <button class="btn btn-primary"><i class="fas fa-download"></i> Download PDF</button>
+        </div>
+      </div>
+
+      <div class="three-col" style="margin-bottom:20px">
+        <div class="card" style="text-align:center;padding:24px">
+          <div style="font-size:42px;margin-bottom:8px">📈</div>
+          <div style="font-size:22px;font-weight:800;color:var(--primary)">91.4%</div>
+          <div style="font-size:13px;color:var(--text-muted)">Average Attendance</div>
+        </div>
+        <div class="card" style="text-align:center;padding:24px">
+          <div style="font-size:42px;margin-bottom:8px">🎯</div>
+          <div style="font-size:22px;font-weight:800;color:var(--success)">78.4%</div>
+          <div style="font-size:13px;color:var(--text-muted)">Average Marks</div>
+        </div>
+        <div class="card" style="text-align:center;padding:24px">
+          <div style="font-size:42px;margin-bottom:8px">💰</div>
+          <div style="font-size:22px;font-weight:800;color:var(--warning)">82.8%</div>
+          <div style="font-size:13px;color:var(--text-muted)">Fee Collection Rate</div>
+        </div>
+      </div>
+
+      <div class="two-col" style="margin-bottom:20px">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Attendance Trend (Monthly)</div></div>
+          <div class="card-body">
+            <div class="chart-placeholder">
+              <div class="chart-bars" style="height:120px">
+                <div class="chart-bar" style="height:75px;width:28px"></div>
+                <div class="chart-bar green" style="height:90px;width:28px"></div>
+                <div class="chart-bar" style="height:80px;width:28px"></div>
+                <div class="chart-bar green" style="height:100px;width:28px"></div>
+                <div class="chart-bar" style="height:85px;width:28px"></div>
+                <div class="chart-bar yellow" style="height:70px;width:28px"></div>
+                <div class="chart-bar" style="height:95px;width:28px"></div>
+                <div class="chart-bar green" style="height:110px;width:28px"></div>
+              </div>
+              <div class="chart-label">Sep · Oct · Nov · Dec · Jan · Feb · Mar · Apr</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Academic Performance by Class</div></div>
+          <div class="card-body">
+            <div class="chart-placeholder">
+              <div class="chart-bars" style="height:120px">
+                <div class="chart-bar" style="height:85px;width:36px"></div>
+                <div class="chart-bar green" style="height:78px;width:36px"></div>
+                <div class="chart-bar yellow" style="height:92px;width:36px"></div>
+                <div class="chart-bar" style="height:70px;width:36px"></div>
+              </div>
+              <div class="chart-label">Grade 9 · Grade 10 · Grade 11 · Grade 12</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">Fee Collection Trend</div></div>
+        <div class="card-body">
+          <div class="chart-placeholder" style="height:180px">
+            <div class="chart-bars" style="height:120px">
+              <div class="chart-bar green" style="height:70px;width:32px"></div>
+              <div class="chart-bar green" style="height:80px;width:32px"></div>
+              <div class="chart-bar green" style="height:90px;width:32px"></div>
+              <div class="chart-bar yellow" style="height:65px;width:32px"></div>
+              <div class="chart-bar green" style="height:100px;width:32px"></div>
+              <div class="chart-bar green" style="height:85px;width:32px"></div>
+              <div class="chart-bar" style="height:95px;width:32px"></div>
+              <div class="chart-bar green" style="height:110px;width:32px"></div>
+              <div class="chart-bar green" style="height:78px;width:32px"></div>
+            </div>
+            <div class="chart-label">Sep · Oct · Nov · Dec · Jan · Feb · Mar · Apr · May</div>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--success)"></div> Collected</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--primary)"></div> Target</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--warning)"></div> Partial</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== NOTIFICATIONS ==================== -->
+    <section class="section" id="sec-notifications">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Notifications</div>
+          <div class="page-subtitle">3 unread notifications</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary">Mark All Read</button>
+          <button class="btn btn-primary"><i class="fas fa-plus"></i> New Announcement</button>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div>
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><div class="card-title">📢 School Announcements</div></div>
+            <div class="card-body">
+              <div id="announcementList"></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><div class="card-title">📝 Exam Reminders</div></div>
+            <div class="card-body">
+              <div id="examReminderList"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">📚 Homework Reminders</div></div>
+            <div class="card-body">
+              <div id="hwReminderList"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- end page-content -->
+</div><!-- end main -->
+
+<!-- ==================== MODALS ==================== -->
+
+<!-- Add Student Modal -->
+<div class="modal-overlay" id="addStudentModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add New Student</div>
+      <button class="modal-close" onclick="closeModal('addStudentModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">First Name</label><input class="form-input" type="text" placeholder="e.g. Ayesha"></div>
+        <div class="form-group"><label class="form-label">Last Name</label><input class="form-input" type="text" placeholder="e.g. Malik"></div>
+        <div class="form-group"><label class="form-label">Date of Birth</label><input class="form-input" type="date"></div>
+        <div class="form-group"><label class="form-label">Gender</label><select class="form-input"><option>Male</option><option>Female</option><option>Other</option></select></div>
+        <div class="form-group"><label class="form-label">Class</label><select class="form-input"><option>Class 9</option><option>Class 10</option><option>Class 11</option><option>Class 12</option></select></div>
+        <div class="form-group"><label class="form-label">Section</label><select class="form-input"><option>A</option><option>B</option><option>C</option></select></div>
+        <div class="form-group"><label class="form-label">Parent/Guardian Name</label><input class="form-input" type="text" placeholder="Full name"></div>
+        <div class="form-group"><label class="form-label">Parent Contact</label><input class="form-input" type="tel" placeholder="+92 300 0000000"></div>
+        <div class="form-group full"><label class="form-label">Home Address</label><input class="form-input" type="text" placeholder="Street, City"></div>
+        <div class="form-group"><label class="form-label">Admission Date</label><input class="form-input" type="date"></div>
+        <div class="form-group"><label class="form-label">Fee Plan</label><select class="form-input"><option>Standard ($1500/term)</option><option>Reduced ($900/term)</option><option>Scholarship</option></select></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('addStudentModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('addStudentModal')"><i class="fas fa-save"></i> Save Student</button>
+    </div>
+  </div>
+</div>
+
+<!-- Student Profile Modal -->
+<div class="modal-overlay" id="studentProfileModal">
+  <div class="modal modal-large">
+    <div class="modal-header">
+      <div class="modal-title">Student Profile</div>
+      <button class="modal-close" onclick="closeModal('studentProfileModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="profile-banner">
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar-img" id="profileInitials">AK</div>
+        </div>
+      </div>
+      <div style="margin-top:44px">
+        <div style="font-size:20px;font-weight:800" id="profileName">Ayesha Khan</div>
+        <div style="font-size:13px;color:var(--text-muted)" id="profileClass">Class 10-A · Student ID: STU-0042</div>
+        <div style="margin-top:6px" id="profileBadge"><span class="badge badge-success">Active</span></div>
+      </div>
+      <div class="divider"></div>
+      <div class="profile-info-grid" id="profileInfoGrid">
+        <div class="profile-info-item"><div class="label">Date of Birth</div><div class="value">March 15, 2010</div></div>
+        <div class="profile-info-item"><div class="label">Gender</div><div class="value">Female</div></div>
+        <div class="profile-info-item"><div class="label">Parent/Guardian</div><div class="value">Mr. Tariq Khan</div></div>
+        <div class="profile-info-item"><div class="label">Contact</div><div class="value">+92 300 1234567</div></div>
+        <div class="profile-info-item"><div class="label">Address</div><div class="value">34 Gulberg III, Lahore</div></div>
+        <div class="profile-info-item"><div class="label">Fee Status</div><div class="value"><span class="badge badge-success">Paid</span></div></div>
+      </div>
+      <div class="divider"></div>
+      <div class="two-col">
+        <div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:10px">Academic Performance</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div><div class="flex justify-between text-sm" style="margin-bottom:4px"><span>Mathematics</span><span style="font-weight:700">88%</span></div><div class="progress"><div class="progress-bar blue" style="width:88%"></div></div></div>
+            <div><div class="flex justify-between text-sm" style="margin-bottom:4px"><span>Science</span><span style="font-weight:700">92%</span></div><div class="progress"><div class="progress-bar green" style="width:92%"></div></div></div>
+            <div><div class="flex justify-between text-sm" style="margin-bottom:4px"><span>English</span><span style="font-weight:700">85%</span></div><div class="progress"><div class="progress-bar yellow" style="width:85%"></div></div></div>
+            <div><div class="flex justify-between text-sm" style="margin-bottom:4px"><span>Urdu</span><span style="font-weight:700">79%</span></div><div class="progress"><div class="progress-bar blue" style="width:79%"></div></div></div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:10px">Attendance Summary</div>
+          <div class="donut-wrap">
+            <div class="donut" style="width:70px;height:70px"><span class="donut-label" style="font-size:13px">93%</span></div>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:4px">93% Attendance</div>
+              <div style="font-size:12px;color:var(--text-muted)">Present: 112 days</div>
+              <div style="font-size:12px;color:var(--text-muted)">Absent: 8 days</div>
+              <div style="font-size:12px;color:var(--text-muted)">Late: 3 times</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('studentProfileModal')">Close</button>
+      <button class="btn btn-primary"><i class="fas fa-edit"></i> Edit Profile</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== JAVASCRIPT ==================== -->
+<script>
+/* =============================================
+   SAMPLE DATA
+   ============================================= */
+const COLORS = ['#1a56db','#10b981','#f59e0b','#ef4444','#8b5cf6','#0ea5e9','#ec4899','#14b8a6'];
+function randomColor() { return COLORS[Math.floor(Math.random()*COLORS.length)]; }
+
+const studentData = [
+  {id:'STU-0001',name:'Ayesha Malik',cls:'10-A',gender:'Female',parent:'Mr. Tariq Malik',contact:'+92 300 1234567',fees:'Paid',status:'Active'},
+  {id:'STU-0002',name:'Ali Raza',cls:'12-B',gender:'Male',parent:'Mr. Raza Shah',contact:'+92 321 9876543',fees:'Paid',status:'Active'},
+  {id:'STU-0003',name:'Sara Mirza',cls:'11-A',gender:'Female',parent:'Mrs. Nadia Mirza',contact:'+92 333 4455667',fees:'Pending',status:'Active'},
+  {id:'STU-0004',name:'Hassan Ali',cls:'11-B',gender:'Male',parent:'Mr. Iftikhar Ali',contact:'+92 345 1122334',fees:'Paid',status:'Active'},
+  {id:'STU-0005',name:'Zara Khan',cls:'12-A',gender:'Female',parent:'Mr. Adil Khan',contact:'+92 300 9988776',fees:'Paid',status:'Active'},
+  {id:'STU-0006',name:'Usman Farooq',cls:'9-C',gender:'Male',parent:'Mr. Farooq Ahmed',contact:'+92 312 6677889',fees:'Overdue',status:'Active'},
+  {id:'STU-0007',name:'Hina Baig',cls:'10-B',gender:'Female',parent:'Mrs. Sana Baig',contact:'+92 322 3344556',fees:'Paid',status:'Active'},
+  {id:'STU-0008',name:'Bilal Siddiqui',cls:'9-A',gender:'Male',parent:'Mr. Naeem Siddiqui',contact:'+92 301 5566778',fees:'Paid',status:'Active'},
+  {id:'STU-0009',name:'Maria Rehman',cls:'12-C',gender:'Female',parent:'Mr. Abdul Rehman',contact:'+92 334 7788990',fees:'Pending',status:'Active'},
+  {id:'STU-0010',name:'Faisal Nawaz',cls:'11-C',gender:'Male',parent:'Mr. Ghulam Nawaz',contact:'+92 344 2233445',fees:'Paid',status:'Active'},
+  {id:'STU-0011',name:'Nadia Hussain',cls:'10-C',gender:'Female',parent:'Mrs. Rubina Hussain',contact:'+92 316 8899001',fees:'Paid',status:'Active'},
+  {id:'STU-0012',name:'Saad Iqbal',cls:'9-B',gender:'Male',parent:'Mr. Shahid Iqbal',contact:'+92 305 4455667',fees:'Paid',status:'Inactive'},
+  {id:'STU-0013',name:'Amna Chaudhry',cls:'12-A',gender:'Female',parent:'Mr. Khalid Chaudhry',contact:'+92 319 1122334',fees:'Paid',status:'Active'},
+  {id:'STU-0014',name:'Hamza Qureshi',cls:'11-A',gender:'Male',parent:'Mr. Waseem Qureshi',contact:'+92 308 9900112',fees:'Overdue',status:'Active'},
+  {id:'STU-0015',name:'Fatima Shah',cls:'10-A',gender:'Female',parent:'Mrs. Zainab Shah',contact:'+92 311 3344556',fees:'Paid',status:'Active'},
+];
+
+const teacherData = [
+  {name:'Mr. Ahmad Hussain',id:'TCH-001',subjects:'Mathematics',classes:'10-A, 10-B, 11-A',exp:'12 yrs',contact:'+92 300 1111111',joined:'2012',status:'Active'},
+  {name:'Ms. Fatima Zahra',id:'TCH-002',subjects:'Chemistry',classes:'11-A, 11-B, 12-A',exp:'8 yrs',contact:'+92 321 2222222',joined:'2016',status:'Active'},
+  {name:'Mr. Imran Sheikh',id:'TCH-003',subjects:'Physics',classes:'10-B, 11-C, 12-B',exp:'15 yrs',contact:'+92 333 3333333',joined:'2009',status:'Active'},
+  {name:'Mrs. Nadia Rahman',id:'TCH-004',subjects:'English',classes:'9-A, 9-B, 10-A',exp:'6 yrs',contact:'+92 345 4444444',joined:'2018',status:'Active'},
+  {name:'Mr. Khalid Anwar',id:'TCH-005',subjects:'Urdu',classes:'9-C, 10-C, 11-B',exp:'20 yrs',contact:'+92 300 5555555',joined:'2004',status:'Active'},
+  {name:'Ms. Sobia Tariq',id:'TCH-006',subjects:'Biology',classes:'11-A, 12-A, 12-C',exp:'9 yrs',contact:'+92 322 6666666',joined:'2015',status:'Active'},
+  {name:'Mr. Zafar Abbas',id:'TCH-007',subjects:'Computer Science',classes:'10-A, 11-A, 12-B',exp:'11 yrs',contact:'+92 301 7777777',joined:'2013',status:'Active'},
+  {name:'Mrs. Asma Khatoon',id:'TCH-008',subjects:'Islamiat',classes:'9-A, 9-B, 9-C',exp:'14 yrs',contact:'+92 334 8888888',joined:'2010',status:'Active'},
+];
+
+const classData = [
+  {cls:'Grade 9',sections:'A, B, C',students:210,teacher:'Mrs. Asma Khatoon'},
+  {cls:'Grade 10',sections:'A, B, C',students:205,teacher:'Mrs. Nadia Rahman'},
+  {cls:'Grade 11',sections:'A, B, C',students:198,teacher:'Ms. Fatima Zahra'},
+  {cls:'Grade 12',sections:'A, B, C',students:182,teacher:'Mr. Ahmad Hussain'},
+];
+const subjectData = [
+  {name:'Mathematics',code:'MATH-101',teachers:'Mr. Ahmad Hussain',classes:'9,10,11,12',type:'Core'},
+  {name:'Physics',code:'PHY-201',teachers:'Mr. Imran Sheikh',classes:'10,11,12',type:'Core'},
+  {name:'Chemistry',code:'CHEM-201',teachers:'Ms. Fatima Zahra',classes:'10,11,12',type:'Core'},
+  {name:'Biology',code:'BIO-201',teachers:'Ms. Sobia Tariq',classes:'11,12',type:'Elective'},
+  {name:'English',code:'ENG-101',teachers:'Mrs. Nadia Rahman',classes:'9,10,11,12',type:'Core'},
+  {name:'Urdu',code:'URD-101',teachers:'Mr. Khalid Anwar',classes:'9,10,11,12',type:'Core'},
+  {name:'Computer Science',code:'CS-201',teachers:'Mr. Zafar Abbas',classes:'10,11,12',type:'Elective'},
+  {name:'Islamiat',code:'ISL-101',teachers:'Mrs. Asma Khatoon',classes:'9,10,11,12',type:'Core'},
+];
+
+const attendanceStudents = [
+  'Ayesha Malik','Ali Hassan','Sara Noor','Hassan Ali','Bilal Ahmed','Hina Baig','Usman Tariq','Maria Iqbal',
+  'Faisal Rehman','Nadia Chaudhry','Saad Mirza','Amna Shah','Hamza Qureshi','Fatima Zahra','Kashif Abbas',
+  'Zara Malik','Omar Farooq','Rukhsana Bibi','Asad Mehmood','Sana Arif','Imran Bashir','Rabia Nawaz',
+  'Talha Siddiqui','Mehwish Anwar','Jawad Hussain','Alina Baig','Kamran Ashraf','Saba Khalid','Zaheer Ahmed','Maira Tariq'
+];
+
+const assignmentData = [
+  {title:'Quadratic Equations Worksheet',subject:'Mathematics',cls:'10-A',teacher:'Mr. Ahmad Hussain',assigned:'May 25',due:'Jun 3',submissions:'42/50',status:'Pending'},
+  {title:'Lab Report: Acid-Base Reactions',subject:'Chemistry',cls:'11-B',teacher:'Ms. Fatima Zahra',assigned:'May 26',due:'Jun 5',submissions:'38/45',status:'Pending'},
+  {title:'Essay: Climate Change',subject:'English',cls:'12-A',teacher:'Mrs. Nadia Rahman',assigned:'May 28',due:'Jun 2',submissions:'50/50',status:'Submitted'},
+  {title:'Numerical Methods Problems',subject:'Mathematics',cls:'12-B',teacher:'Mr. Ahmad Hussain',assigned:'May 29',due:'Jun 6',submissions:'30/48',status:'Pending'},
+  {title:'Optics Ray Diagram',subject:'Physics',cls:'11-A',teacher:'Mr. Imran Sheikh',assigned:'May 30',due:'Jun 7',submissions:'46/50',status:'Submitted'},
+  {title:'DNA Replication Notes',subject:'Biology',cls:'12-A',teacher:'Ms. Sobia Tariq',assigned:'May 31',due:'Jun 10',submissions:'0/52',status:'Graded'},
+  {title:'Pakistan History Essay',subject:'Urdu',cls:'9-C',teacher:'Mr. Khalid Anwar',assigned:'Jun 1',due:'Jun 8',submissions:'15/40',status:'Pending'},
+];
+
+const examSchedule = [
+  {subject:'Mathematics',date:'Jun 8',time:'08:00–10:30 AM',room:'Hall A',invigilator:'Mr. Ahmad Hussain'},
+  {subject:'Physics',date:'Jun 10',time:'08:00–10:30 AM',room:'Hall B',invigilator:'Mr. Imran Sheikh'},
+  {subject:'Chemistry',date:'Jun 11',time:'08:00–10:30 AM',room:'Hall A',invigilator:'Ms. Fatima Zahra'},
+  {subject:'English',date:'Jun 12',time:'08:00–10:00 AM',room:'Hall C',invigilator:'Mrs. Nadia Rahman'},
+  {subject:'Biology',date:'Jun 14',time:'08:00–10:30 AM',room:'Hall B',invigilator:'Ms. Sobia Tariq'},
+  {subject:'Computer Science',date:'Jun 16',time:'02:00–04:00 PM',room:'Lab 1',invigilator:'Mr. Zafar Abbas'},
+];
+
+const rankingData = [
+  {rank:1,name:'Zara Khan',total:'589/600',pct:'98.4%',grade:'A+'},
+  {rank:2,name:'Ali Raza',total:'577/600',pct:'96.1%',grade:'A+'},
+  {rank:3,name:'Sara Mirza',total:'575/600',pct:'95.8%',grade:'A+'},
+  {rank:4,name:'Hassan Ali',total:'566/600',pct:'94.3%',grade:'A'},
+  {rank:5,name:'Amna Chaudhry',total:'558/600',pct:'93.0%',grade:'A'},
+  {rank:6,name:'Fatima Shah',total:'551/600',pct:'91.8%',grade:'A'},
+  {rank:7,name:'Bilal Siddiqui',total:'540/600',pct:'90.0%',grade:'A-'},
+  {rank:8,name:'Maria Rehman',total:'532/600',pct:'88.7%',grade:'B+'},
+  {rank:9,name:'Faisal Nawaz',total:'525/600',pct:'87.5%',grade:'B+'},
+  {rank:10,name:'Hina Baig',total:'510/600',pct:'85.0%',grade:'B'},
+];
+
+const marksData = [
+  {name:'Zara Khan',math:98,phy:97,chem:99,bio:98,eng:99,cs:98,total:589,pct:'98.4%',grade:'A+'},
+  {name:'Ali Raza',math:95,phy:96,chem:94,bio:97,eng:96,cs:99,total:577,pct:'96.1%',grade:'A+'},
+  {name:'Sara Mirza',math:94,phy:95,chem:97,bio:96,eng:94,cs:99,total:575,pct:'95.8%',grade:'A+'},
+  {name:'Hassan Ali',math:93,phy:92,chem:96,bio:94,eng:95,cs:96,total:566,pct:'94.3%',grade:'A'},
+  {name:'Amna Chaudhry',math:90,phy:93,chem:94,bio:93,eng:93,cs:95,total:558,pct:'93.0%',grade:'A'},
+  {name:'Fatima Shah',math:91,phy:91,chem:93,bio:90,eng:92,cs:94,total:551,pct:'91.8%',grade:'A'},
+  {name:'Bilal Siddiqui',math:88,phy:90,chem:90,bio:91,eng:90,cs:91,total:540,pct:'90.0%',grade:'A-'},
+];
+
+const feeData = [
+  {student:'Ayesha Malik',cls:'10-A',type:'Tuition Fee',amount:'$1,500',due:'Jun 1',paid:'May 28',method:'Online',status:'Paid'},
+  {student:'Ali Raza',cls:'12-B',type:'Tuition Fee',amount:'$1,500',due:'Jun 1',paid:'May 29',method:'Cash',status:'Paid'},
+  {student:'Sara Mirza',cls:'11-A',type:'Tuition Fee',amount:'$1,500',due:'Jun 1',paid:'—',method:'—',status:'Pending'},
+  {student:'Hassan Ali',cls:'11-B',type:'Tuition + Lab',amount:'$1,800',due:'Jun 1',paid:'May 27',method:'Bank Transfer',status:'Paid'},
+  {student:'Zara Khan',cls:'12-A',type:'Tuition Fee',amount:'$1,500',due:'Jun 1',paid:'May 30',method:'Online',status:'Paid'},
+  {student:'Usman Farooq',cls:'9-C',type:'Tuition Fee',amount:'$1,200',due:'May 1',paid:'—',method:'—',status:'Overdue'},
+  {student:'Hina Baig',cls:'10-B',type:'Tuition Fee',amount:'$1,500',due:'Jun 1',paid:'May 31',method:'Cash',status:'Paid'},
+  {student:'Bilal Siddiqui',cls:'9-A',type:'Tuition Fee',amount:'$1,200',due:'Jun 1',paid:'Jun 1',method:'Online',status:'Paid'},
+  {student:'Maria Rehman',cls:'12-C',type:'Tuition + Activities',amount:'$1,700',due:'Jun 1',paid:'—',method:'—',status:'Pending'},
+  {student:'Faisal Nawaz',cls:'11-C',type:'Tuition Fee',amount:'$1,500',due:'Jun 1',paid:'May 28',method:'Bank Transfer',status:'Paid'},
+  {student:'Hamza Qureshi',cls:'11-A',type:'Tuition Fee',amount:'$1,500',due:'May 1',paid:'—',method:'—',status:'Overdue'},
+];
+
+const notifData = {
+  announcements: [
+    {icon:'📢',color:'var(--primary-light)',iconColor:'var(--primary)',title:'Final Exams Schedule Released',text:'The final examination timetable for all classes has been published. Please check the exam schedule section for dates and times.',time:'2 hours ago',unread:true},
+    {icon:'🏫',color:'var(--success-light)',iconColor:'var(--success)',title:'Annual Science Fair – Registration Open',text:'Students interested in participating in the Science Fair on June 12 must register by June 6. Forms available from the science department.',time:'Yesterday',unread:true},
+    {icon:'🎉',color:'var(--warning-light)',iconColor:'var(--warning)',title:'Sports Day Results',text:'Congratulations to Class 11 for winning the inter-class cricket tournament! Full results posted on the notice board.',time:'2 days ago',unread:false},
+    {icon:'📅',color:'var(--purple-light)',iconColor:'var(--purple)',title:'Parent-Teacher Meeting Reminder',text:'PTM is scheduled for June 15. Parents are requested to confirm attendance by filling the form sent via SMS.',time:'3 days ago',unread:false},
+  ],
+  exams: [
+    {icon:'📝',color:'var(--danger-light)',iconColor:'var(--danger)',title:'Mathematics Final – June 8',text:'Final exam for all Grade 10, 11, 12 students. Syllabus: Chapters 1–12. Hall A, 8:00 AM sharp.',time:'In 7 days',unread:true},
+    {icon:'⚗️',color:'var(--cyan)',iconColor:'var(--accent)',title:'Chemistry Practical – June 11',text:'Practical examination includes titration and salt analysis. Report to Lab 1 by 7:45 AM with lab coat.',time:'In 10 days',unread:false},
+    {icon:'💻',color:'var(--purple-light)',iconColor:'var(--purple)',title:'CS Practical Lab Test – June 16',text:'Database and Python programming. Students must bring their own USB drives. Lab 1, 2:00 PM.',time:'In 15 days',unread:false},
+  ],
+  homework: [
+    {icon:'📐',color:'var(--primary-light)',iconColor:'var(--primary)',title:'Math: Quadratic Equations Worksheet',text:'Due June 3 — Class 10-A. 25 problems, show full working. Submit to Mr. Ahmad before class.',time:'Due in 2 days',unread:false},
+    {icon:'🔬',color:'var(--success-light)',iconColor:'var(--success)',title:'Chemistry: Lab Report Submission',text:'Due June 5 — Class 11-B. Acid-base reaction lab report. Format: Introduction, Procedure, Results, Conclusion.',time:'Due in 4 days',unread:false},
+    {icon:'📖',color:'var(--warning-light)',iconColor:'var(--warning)',title:'English: Essay on Climate Change',text:'Due June 2 — Class 12-A. 500-word essay. MLA format. Email submission to Ms. Nadia by midnight.',time:'Due tomorrow',unread:false},
+  ]
+};
+
+/* =============================================
+   RENDER FUNCTIONS
+   ============================================= */
+function getInitials(name) {
+  return name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+}
+
+function renderStudents() {
+  const tbody = document.getElementById('studentTableBody');
+  tbody.innerHTML = studentData.map((s,i) => {
+    const c = COLORS[i % COLORS.length];
+    const feeCls = s.fees==='Paid'?'badge-success':s.fees==='Pending'?'badge-warning':'badge-danger';
+    const stCls = s.status==='Active'?'badge-success':'badge-gray';
+    return `<tr>
+      <td><input type="checkbox" style="accent-color:var(--primary)"></td>
+      <td><div class="avatar-row"><div class="avatar" style="background:${c}">${getInitials(s.name)}</div><div class="info"><div class="name">${s.name}</div><div class="sub">${s.id}</div></div></div></td>
+      <td>${s.id}</td>
+      <td><span class="badge badge-primary">${s.cls}</span></td>
+      <td>${s.gender}</td>
+      <td>${s.parent}</td>
+      <td>${s.contact}</td>
+      <td><span class="badge ${feeCls}">${s.fees}</span></td>
+      <td><span class="badge ${stCls}"><i class="fas fa-circle" style="font-size:7px"></i> ${s.status}</span></td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn-icon" title="View" onclick="viewStudentProfile(${i})"><i class="fas fa-eye"></i></button>
+        <button class="btn-icon" title="Edit"><i class="fas fa-edit"></i></button>
+        <button class="btn-icon" title="Delete" style="color:var(--danger)"><i class="fas fa-trash"></i></button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderTeachers() {
+  const tbody = document.getElementById('teacherTableBody');
+  tbody.innerHTML = teacherData.map((t,i) => {
+    const c = COLORS[i % COLORS.length];
+    return `<tr>
+      <td><div class="avatar-row"><div class="avatar" style="background:${c}">${getInitials(t.name)}</div><div class="info"><div class="name">${t.name}</div><div class="sub">${t.id}</div></div></div></td>
+      <td>${t.id}</td>
+      <td>${t.subjects}</td>
+      <td>${t.classes}</td>
+      <td>${t.exp}</td>
+      <td>${t.contact}</td>
+      <td>${t.joined}</td>
+      <td><span class="badge badge-success"><i class="fas fa-circle" style="font-size:7px"></i> ${t.status}</span></td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn-icon"><i class="fas fa-eye"></i></button>
+        <button class="btn-icon"><i class="fas fa-edit"></i></button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderClasses() {
+  const tbody = document.getElementById('classTableBody');
+  tbody.innerHTML = classData.map(c => `<tr>
+    <td><strong>${c.cls}</strong></td>
+    <td>${c.sections}</td>
+    <td>${c.students}</td>
+    <td>${c.teacher}</td>
+    <td><span class="badge badge-success">Active</span></td>
+  </tr>`).join('');
+
+  const stbody = document.getElementById('subjectTableBody');
+  stbody.innerHTML = subjectData.map(s => {
+    const tc = s.type==='Core'?'badge-primary':'badge-purple';
+    return `<tr>
+      <td><strong>${s.name}</strong></td>
+      <td><span class="badge badge-gray">${s.code}</span></td>
+      <td>${s.teachers}</td>
+      <td>${s.classes}</td>
+      <td><span class="badge ${tc}">${s.type}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderAttendance() {
+  const list = document.getElementById('attendanceList');
+  list.innerHTML = attendanceStudents.map((name, i) => {
+    const c = COLORS[i % COLORS.length];
+    return `<div class="attendance-row">
+      <div class="avatar-row" style="flex:1">
+        <div class="avatar avatar-sm" style="background:${c}">${getInitials(name)}</div>
+        <div class="info">
+          <div class="name">${name}</div>
+          <div class="sub">Roll #${String(i+1).padStart(2,'0')}</div>
+        </div>
+      </div>
+      <div class="att-status-btn">
+        <button class="att-btn present active" onclick="toggleAtt(this,'present')">P</button>
+        <button class="att-btn absent" onclick="toggleAtt(this,'absent')">A</button>
+        <button class="att-btn late" onclick="toggleAtt(this,'late')">L</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderAssignments() {
+  const tbody = document.getElementById('assignmentTableBody');
+  tbody.innerHTML = assignmentData.map(a => {
+    const stCls = a.status==='Graded'?'badge-success':a.status==='Submitted'?'badge-primary':'badge-warning';
+    return `<tr>
+      <td><strong>${a.title}</strong></td>
+      <td>${a.subject}</td>
+      <td><span class="badge badge-primary">${a.cls}</span></td>
+      <td>${a.teacher}</td>
+      <td>${a.assigned}</td>
+      <td><strong>${a.due}</strong></td>
+      <td>${a.submissions}</td>
+      <td><span class="badge ${stCls}">${a.status}</span></td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn-icon"><i class="fas fa-eye"></i></button>
+        <button class="btn-icon"><i class="fas fa-edit"></i></button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderExams() {
+  document.getElementById('examScheduleBody').innerHTML = examSchedule.map(e => `<tr>
+    <td><strong>${e.subject}</strong></td>
+    <td>${e.date}</td>
+    <td>${e.time}</td>
+    <td><span class="badge badge-cyan">${e.room}</span></td>
+    <td>${e.invigilator}</td>
+  </tr>`).join('');
+
+  document.getElementById('rankingTableBody').innerHTML = rankingData.map(r => {
+    const medals = {1:'🥇',2:'🥈',3:'🥉'};
+    const gCls = r.grade.startsWith('A+')?'badge-success':r.grade.startsWith('A')?'badge-primary':'badge-warning';
+    return `<tr>
+      <td>${medals[r.rank]||r.rank}</td>
+      <td><strong>${r.name}</strong></td>
+      <td>${r.total}</td>
+      <td><strong>${r.pct}</strong></td>
+      <td><span class="badge ${gCls}">${r.grade}</span></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('marksTableBody').innerHTML = marksData.map(m => {
+    const gCls = m.grade==='A+'?'badge-success':'badge-primary';
+    return `<tr>
+      <td><strong>${m.name}</strong></td>
+      <td>${m.math}</td><td>${m.phy}</td><td>${m.chem}</td><td>${m.bio}</td><td>${m.eng}</td><td>${m.cs}</td>
+      <td><strong>${m.total}</strong></td>
+      <td><strong>${m.pct}</strong></td>
+      <td><span class="badge ${gCls}">${m.grade}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderFees() {
+  document.getElementById('feeTableBody').innerHTML = feeData.map(f => {
+    const stCls = f.status==='Paid'?'badge-success':f.status==='Pending'?'badge-warning':'badge-danger';
+    const c = COLORS[feeData.indexOf(f)%COLORS.length];
+    return `<tr>
+      <td><div class="avatar-row"><div class="avatar avatar-sm" style="background:${c}">${getInitials(f.student)}</div><div class="info"><div class="name">${f.student}</div></div></div></td>
+      <td><span class="badge badge-primary">${f.cls}</span></td>
+      <td>${f.type}</td>
+      <td><strong>${f.amount}</strong></td>
+      <td>${f.due}</td>
+      <td>${f.paid}</td>
+      <td>${f.method}</td>
+      <td><span class="badge ${stCls}"><i class="fas fa-circle" style="font-size:7px"></i> ${f.status}</span></td>
+      <td>${f.status==='Paid'?`<button class="btn btn-secondary btn-sm"><i class="fas fa-receipt"></i></button>`:`<button class="btn btn-primary btn-sm"><i class="fas fa-dollar-sign"></i> Collect</button>`}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderNotifications() {
+  const mkList = (arr, id) => {
+    document.getElementById(id).innerHTML = arr.map(n => `
+      <div class="notif-card">
+        <div class="notif-icon" style="background:${n.color};color:${n.iconColor}">${n.icon}</div>
+        <div class="notif-body">
+          <div class="notif-title">${n.title}</div>
+          <div class="notif-text">${n.text}</div>
+          <div class="notif-time">${n.time}</div>
+        </div>
+        ${n.unread?'<div class="notif-unread"></div>':''}
+      </div>`).join('');
+  };
+  mkList(notifData.announcements,'announcementList');
+  mkList(notifData.exams,'examReminderList');
+  mkList(notifData.homework,'hwReminderList');
+}
+
+/* =============================================
+   NAVIGATION
+   ============================================= */
+const sectionMap = {
+  dashboard: 'Dashboard', students: 'Students', teachers: 'Teachers',
+  classes: 'Classes & Subjects', attendance: 'Attendance', assignments: 'Assignments',
+  exams: 'Exams & Results', fees: 'Fee Management', reports: 'Reports', notifications: 'Notifications'
+};
+
+function navigate(id, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  if(el) el.classList.add('active');
+  document.getElementById('breadcrumb').textContent = sectionMap[id]||id;
+  // Close mobile sidebar on navigate
+  if(window.innerWidth <= 900) closeMobileSidebar();
+  // Lazy render data
+  const renderers = {
+    students: renderStudents, teachers: renderTeachers, classes: renderClasses,
+    attendance: renderAttendance, assignments: renderAssignments, exams: renderExams,
+    fees: renderFees, notifications: renderNotifications
+  };
+  if(renderers[id]) renderers[id]();
+}
+
+/* =============================================
+   SIDEBAR TOGGLE
+   ============================================= */
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  if(window.innerWidth <= 900) {
+    sb.classList.toggle('mobile-open');
+    document.getElementById('sidebarOverlay').classList.toggle('visible', sb.classList.contains('mobile-open'));
+  } else {
+    sb.classList.toggle('collapsed');
+  }
+}
+function closeMobileSidebar() {
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  document.getElementById('sidebarOverlay').classList.remove('visible');
+}
+
+/* =============================================
+   MODALS
+   ============================================= */
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if(e.target === overlay) {
+      overlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  });
+});
+
+/* =============================================
+   STUDENT PROFILE
+   ============================================= */
+function viewStudentProfile(idx) {
+  const s = studentData[idx];
+  const initials = getInitials(s.name);
+  document.getElementById('profileInitials').textContent = initials;
+  document.getElementById('profileName').textContent = s.name;
+  document.getElementById('profileClass').textContent = `Class ${s.cls} · ${s.id}`;
+  const fc = s.fees==='Paid'?'badge-success':s.fees==='Pending'?'badge-warning':'badge-danger';
+  document.getElementById('profileBadge').innerHTML = `<span class="badge badge-success">${s.status}</span> <span class="badge ${fc}">${s.fees}</span>`;
+  openModal('studentProfileModal');
+}
+
+/* =============================================
+   ATTENDANCE HELPERS
+   ============================================= */
+function toggleAtt(btn, type) {
+  const row = btn.closest('.att-status-btn');
+  row.querySelectorAll('.att-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function markAll(type) {
+  document.querySelectorAll(`.att-btn.${type}`).forEach(btn => {
+    const row = btn.closest('.att-status-btn');
+    row.querySelectorAll('.att-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+}
+
+/* =============================================
+   TABLE FILTER
+   ============================================= */
+function filterTable(tableId, query) {
+  const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+  const q = query.toLowerCase();
+  rows.forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+/* =============================================
+   INIT
+   ============================================= */
+window.addEventListener('DOMContentLoaded', () => {
+  // Nothing extra needed; sections render on navigation
+});
+</script>
+</body>
+</html>
